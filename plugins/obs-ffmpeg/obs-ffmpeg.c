@@ -255,7 +255,7 @@ bool obs_module_load(void)
 	obs_register_encoder(&opus_encoder_info);
 #ifndef __APPLE__
 	if (nvenc_supported()) {
-		blog(LOG_INFO, "NVENC supported");
+		blog(LOG_INFO, "FFMPEG NVENC supported");
 #ifdef _WIN32
 		if (get_win_ver_int() > 0x0601) {
 			jim_nvenc_load();
@@ -267,11 +267,15 @@ bool obs_module_load(void)
 		}
 #endif
 		obs_register_encoder(&nvenc_encoder_info);
+	} else {
+		blog(LOG_WARNING, "FFMPEG NVENC not supported");
 	}
 #if !defined(_WIN32) && defined(LIBAVUTIL_VAAPI_AVAILABLE)
 	if (vaapi_supported()) {
 		blog(LOG_INFO, "FFMPEG VAAPI supported");
 		obs_register_encoder(&vaapi_encoder_info);
+	} else {
+		blog(LOG_WARNING, "FFMPEG VAAPI not supported");
 	}
 #endif
 #endif
