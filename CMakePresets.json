@@ -76,7 +76,11 @@
         "ENABLE_NATIVE_NVENC": false,
         "ENABLE_VLC": true,
         "ENABLE_WAYLAND": true,
-        "ENABLE_WEBRTC": false
+        "ENABLE_WEBRTC": false,
+        "ENABLE_BROWSER": false,        
+        "ENABLE_NEW_MPEGTS_OUTPUT": false,
+        "ENABLE_QSV11": false,
+        "ENABLE_WEBSOCKET": false        
       }
     },
     {

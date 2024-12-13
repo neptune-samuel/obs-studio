@@ -422,6 +422,29 @@ ssize_t os_openbsd_get_executable_path(char *epath)
 
 char *os_get_executable_path_ptr(const char *name)
 {
+	// Fixed by LiuChuansen @ 2024-12-06
+	// 如果 name 不为空，则尝试在 /usr/local/bin/ 目录下查找可执行文件
+    if (name && *name) {
+        char sys_path[PATH_MAX];
+        snprintf(sys_path, PATH_MAX, "/usr/local/bin/%s", name);
+        if (access(sys_path, X_OK) == 0) {
+            struct dstr path;
+            dstr_init_copy(&path, "/usr/local/bin/");
+            dstr_cat(&path, name);
+            return path.array;
+        }
+
+		// try /usr/bin/
+        snprintf(sys_path, PATH_MAX, "/usr/bin/%s", name);
+        if (access(sys_path, X_OK) == 0) {
+            struct dstr path;
+            dstr_init_copy(&path, "/usr/bin/");
+            dstr_cat(&path, name);
+            return path.array;
+        }		
+    }
+	// End of Fixed
+		
 	char exe[PATH_MAX];
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 	int sysctlname[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
