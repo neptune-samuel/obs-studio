@@ -292,7 +292,7 @@ static bool gl_context_create(struct gl_platform *plat)
 	plat->context = context;
 
 	success = true;
-	blog(LOG_DEBUG, "Created EGLDisplay %p", plat->edisplay);
+	blog(LOG_INFO, "Created EGLDisplay %p", plat->edisplay);
 
 error:
 	if (!success) {

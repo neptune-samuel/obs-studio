@@ -1174,7 +1174,7 @@ static void on_select_source_response_received_cb(
 	obs_pipewire_data *obs_pw = call->obs_pw;
 	uint32_t response;
 
-	blog(LOG_DEBUG, "[pipewire] Response to select source received");
+	blog(LOG_INFO, "[pipewire] Response to select source received");
 
 	g_clear_pointer(&call, dbus_call_data_free);
 
@@ -1185,6 +1185,8 @@ static void on_select_source_response_received_cb(
 		     "[pipewire] Failed to select source, denied or cancelled by user");
 		return;
 	}
+
+	blog(LOG_INFO, "[pipewire] starting stream");
 
 	start(obs_pw);
 }
@@ -1270,6 +1272,9 @@ static void on_create_session_response_received_cb(
 	UNUSED_PARAMETER(interface_name);
 	UNUSED_PARAMETER(signal_name);
 
+
+	blog(LOG_INFO, "[pipewire] Response to create session received");
+
 	g_autoptr(GVariant) session_handle_variant = NULL;
 	g_autoptr(GVariant) result = NULL;
 	struct dbus_call_data *call = user_data;
@@ -1293,6 +1298,7 @@ static void on_create_session_response_received_cb(
 	obs_pw->session_handle =
 		g_variant_dup_string(session_handle_variant, NULL);
 
+	blog(LOG_INFO, "[pipewire] selecting source");
 	select_source(obs_pw);
 }
 
@@ -1303,6 +1309,8 @@ static void on_session_created_cb(GObject *source, GAsyncResult *res,
 
 	g_autoptr(GVariant) result = NULL;
 	g_autoptr(GError) error = NULL;
+
+	blog(LOG_INFO, "[pipewire] creating screencast session");
 
 	result = g_dbus_proxy_call_finish(G_DBUS_PROXY(source), res, &error);
 	if (error) {
@@ -1321,6 +1329,9 @@ static void create_session(obs_pipewire_data *obs_pw)
 	char *session_token;
 	char *request_token;
 	char *request_path;
+
+
+	blog(LOG_INFO, "[pipewire] creating screencast session");
 
 	new_request_path(obs_pw, &request_path, &request_token);
 	new_session_path(obs_pw, NULL, &session_token);
@@ -1379,11 +1390,15 @@ static gboolean init_obs_pipewire(obs_pipewire_data *obs_pw)
 
 	obs_pw->cancellable = g_cancellable_new();
 	connection = portal_get_dbus_connection();
-	if (!connection)
+	if (!connection){
+		blog(LOG_ERROR, "[pipewire] Failed to get dbus connection");
 		return FALSE;
+	}
 	proxy = portal_get_dbus_proxy();
-	if (!proxy)
+	if (!proxy){
+		blog(LOG_ERROR, "[pipewire] Failed to get dbus proxy");
 		return FALSE;
+	}
 
 	update_available_cursor_modes(obs_pw, proxy);
 
@@ -1434,8 +1449,9 @@ void *obs_pipewire_create(enum obs_pw_capture_type capture_type,
 	obs_pw->restore_token =
 		bstrdup(obs_data_get_string(settings, "RestoreToken"));
 
-	if (!init_obs_pipewire(obs_pw))
+	if (!init_obs_pipewire(obs_pw)){		
 		g_clear_pointer(&obs_pw, bfree);
+	}
 
 	init_format_info(obs_pw);
 
